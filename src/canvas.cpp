@@ -4,12 +4,14 @@
 using namespace std;
 using namespace agl;
 
-canvas::canvas(int w, int h) : _canvas(w, h)
+canvas::canvas(int w, int h)
 {
+	_canvas = ppm_image(w, h);
 }
 
 canvas::~canvas()
 {
+	_canvas.clear();
 }
 
 void canvas::save(const std::string& filename)
