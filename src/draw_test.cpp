@@ -4,6 +4,13 @@
 using namespace agl;
 using namespace std;
 
+int main(int argc, char** argv)
+{
+	canvas drawer(100, 100);
+	drawer.background(0, 0, 0);
+	drawer.save("background_test.ppm");
+}
+/*
 void test_line(canvas& drawer, int ax, int ay, int bx, int by, const std::string& savename)
 {
    drawer.background(0, 0, 0);
@@ -67,3 +74,4 @@ int main(int argc, char** argv)
 
    return 0;
 }
+*/

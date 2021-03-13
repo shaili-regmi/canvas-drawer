@@ -7,6 +7,12 @@
 
 namespace agl
 {
+    struct vertex_struct
+    {
+        int x;
+        int y;
+    };
+
    enum PrimitiveType {UNDEFINED, LINES, TRIANGLES};
    class canvas
    {
@@ -42,6 +48,10 @@ namespace agl
 
    private:
       ppm_image _canvas;
+      ppm_pixel current_color;
+      PrimitiveType current_shape;
+      vertex_struct* vertices = NULL;
+      int total_vertices = 0;
    };
 }
 

@@ -1,3 +1,7 @@
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#define FORMAT "P3" // Image file format
+#define MAX_VALUE 255 // Maximum color value
+
 #include "ppm_image.h"
 #include "stb/stb_image_write.h"
 #include <cassert>
@@ -5,10 +9,7 @@
 #include <sstream>
 #include <vector>
 #include <math.h>
-
-#define FORMAT "P3" // Image file format
-#define MAX_VALUE 255 // Maximum color value
-#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <string> 
 
 using namespace agl;
 using namespace std;
@@ -119,12 +120,13 @@ bool ppm_image::load(const std::string& filename)
 
 bool ppm_image::save(const std::string& filename) const
 {
-
+    /*
     int result = stbi_write_png(filename.c_str(), columns, rows,
         3, (unsigned char*)image_array, columns * 3);
     return (result == 1);
+    */
 
-    /*
+    
     ofstream file(filename);
     if (!file)
     {
@@ -145,7 +147,6 @@ bool ppm_image::save(const std::string& filename) const
 
     file.close();
     return true;
-    */
 }
 
 ppm_image ppm_image::resize(int w, int h) const
