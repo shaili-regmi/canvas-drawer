@@ -5,6 +5,8 @@
 #include <vector>
 #include "ppm_image.h"
 
+using namespace std;
+
 namespace agl
 {
     struct vertex_struct
@@ -50,8 +52,7 @@ namespace agl
       ppm_image _canvas;
       ppm_pixel current_color;
       PrimitiveType current_shape;
-      vertex_struct* vertices = NULL;
-      int total_vertices = 0;
+      vector<vertex_struct> vertices;
    };
 }
 
