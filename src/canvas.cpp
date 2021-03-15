@@ -30,100 +30,6 @@ void canvas::end()
 	{
 		int ax = vertices[i].x;
 		int ay = vertices[i].y;
-		int bx = vertices[i+1].x;
-		int by = vertices[i+1].y;
-		int w = bx - ax;
-		int h = by - ay;
-		bool increment = true; // ax <= bx or ay <= by
-
-		if (h <= w)
-		{
-			if (bx <= ax || by <= ay)
-			{
-				increment = false;
-				if (bx < ax) w = -1 * w;
-				if (by < ay) h = -1 * h;
-				
-				int temp_bx = bx;
-				bx = ax;
-				ax = temp_bx;
-				int temp_by = by;
-				by = ay;
-				ay = temp_by;
-			
-			}
-			int f = (2 * h) - w;
-
-			for (int x = ax; x <= bx; x++)
-			{
-				_canvas.set(ay, x, current_color);
-				if (f > 0)
-				{
-					if (increment)
-					{
-						ay++;
-					}
-					else
-					{
-						ay--;
-					}
-					f += (2 * (h - w));
-				}
-				else
-				{
-					f += (2 * h);
-				}
-			}
-		}
-		else
-		{
-			if (bx <= ax || by <= ay)
-			{
-				increment = false;
-				if (bx < ax) w = -1 * w;
-				if (by < ay) h = -1 * h;
-				
-				int temp_bx = bx;
-				bx = ax;
-				ax = temp_bx;
-				int temp_by = by;
-				by = ay;
-				ay = temp_by;
-				
-			}
-			int f = (2 * w) - h;
-
-			for (int y = ay; y <= by; y++)
-			{
-				_canvas.set(y, ax, current_color);
-				if (f > 0)
-				{
-					if (increment)
-					{
-						ax++;
-					}
-					else
-					{
-						ax--;
-					}
-					f += (2 * (w - h));
-				}
-				else
-				{
-					f += (2 * w);
-				}
-			}
-		}
-	}
-	vertices.clear();
-}
-*/
-void canvas::end()
-{
-	for (int i = 0; i < (vertices.size() - 1); i++)
-	{
-		int ax = vertices[i].x;
-		int ay = vertices[i].y;
 		int bx = vertices[i + 1].x;
 		int by = vertices[i + 1].y;
 		
@@ -223,6 +129,109 @@ void canvas::end()
 		}
 	}
 	vertices.clear();
+}*/
+
+void canvas::end()
+{
+	for (int i = 0; i < (vertices.size() - 1); i++)
+	{
+		int ax = vertices[i].x;
+		int ay = vertices[i].y;
+		int bx = vertices[i + 1].x;
+		int by = vertices[i + 1].y;
+
+		int w = bx - ax;
+		int h = by - ay;
+		bool increment = true; // ax <= bx or ay <= by
+
+		if (h <= w)
+		{
+			if (by < ay)
+			{
+				increment = false;
+				h = ay - by;
+			}
+
+			int f = (2 * h) - w;
+
+			if (bx < ax)
+			{
+				h_less_than_w(bx, by, ax, ay, w, h, f, increment);
+			}
+			else
+			{
+				h_less_than_w(ax, ay, bx, by, w, h, f, increment);
+			}
+		}
+		else
+		{
+			if (bx < ax)
+			{
+				increment = false;
+				w = ax - bx;
+			}
+
+			int f = (2 * w) - h;
+
+			if (by < ay)
+			{
+				w_less_than_h(bx, by, ax, ay, w, h, f, increment);
+			}
+			else
+			{
+				w_less_than_h(ax, ay, bx, by, w, h, f, increment);
+			}
+		}
+	}
+	vertices.clear();
+}
+
+void canvas::h_less_than_w(int ax, int ay, int bx, int by, int w, int h, int f, bool increment)
+{
+	for (int x = ax; x <= bx; x++)
+	{
+		_canvas.set(ay, x, current_color);
+		if (f > 0)
+		{
+			if (increment)
+			{
+				ay++;
+			}
+			else
+			{
+				ay--;
+			}
+			f += (2 * (h - w));
+		}
+		else
+		{
+			f += (2 * h);
+		}
+	}
+}
+
+void canvas::w_less_than_h(int ax, int ay, int bx, int by, int w, int h, int f, bool increment)
+{
+	for (int y = ay; y <= by; y++)
+	{
+		_canvas.set(y, ax, current_color);
+		if (f > 0)
+		{
+			if (increment)
+			{
+				ax++;
+			}
+			else
+			{
+				ax--;
+			}
+			f += (2 * (w - h));
+		}
+		else
+		{
+			f += (2 * w);
+		}
+	}
 }
 
 void canvas::vertex(int x, int y)

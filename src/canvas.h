@@ -38,6 +38,10 @@ namespace agl
       void begin(PrimitiveType type);
       void end();
 
+      // Drawing the two different cases for Bresenham's algorithm
+      void h_less_than_w(int ax, int ay, int bx, int by, int w, int h, int f, bool increment);
+      void w_less_than_h(int ax, int ay, int bx, int by, int w, int h, int f, bool increment);
+
       // Specifiy a vertex at raster position (x,y)
       // x corresponds to the column; y to the row
       void vertex(int x, int y);
