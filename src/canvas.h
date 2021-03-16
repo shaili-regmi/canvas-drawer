@@ -13,6 +13,7 @@ namespace agl
     {
         int x;
         int y;
+        ppm_pixel color;
     };
 
    enum PrimitiveType {UNDEFINED, LINES, TRIANGLES};
@@ -39,8 +40,8 @@ namespace agl
       void end();
 
       // Drawing the two different cases for Bresenham's algorithm
-      void h_less_than_w(int ax, int ay, int bx, int by, int w, int h, int f, bool increment);
-      void w_less_than_h(int ax, int ay, int bx, int by, int w, int h, int f, bool increment);
+      void h_less_than_w(int ax, int ay, int bx, int by, int w, int h, int f, bool increment, ppm_pixel color, ppm_pixel next_color, bool color_interpolation);
+      void w_less_than_h(int ax, int ay, int bx, int by, int w, int h, int f, bool increment, ppm_pixel color, ppm_pixel next_color, bool color_interpolation);
 
       // Specifiy a vertex at raster position (x,y)
       // x corresponds to the column; y to the row
