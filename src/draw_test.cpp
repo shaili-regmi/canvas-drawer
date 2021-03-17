@@ -17,7 +17,7 @@ void test_line(canvas& drawer, int ax, int ay, int bx, int by, const std::string
 int main(int argc, char** argv)
 {
 	canvas drawer(100, 100);
-	
+	/*
 	drawer.background(0, 0, 0);
 
 	drawer.begin(LINES);
@@ -47,12 +47,12 @@ int main(int argc, char** argv)
 	drawer.background(0, 0, 0);
 	drawer.begin(LINES);
 	drawer.color(255, 0, 255);
-	drawer.vertex(100, 100);
+	drawer.vertex(25, 90);
 	drawer.color(0, 255, 255);
-	drawer.vertex(0, 0);
+	drawer.vertex(75, 25);
 	drawer.end();
 	drawer.save("line-color-interpolation.png");
-	/*
+	*/
 	// test triangle with interpolation
 	drawer.background(0, 0, 0);
 	drawer.begin(TRIANGLES);
@@ -79,6 +79,6 @@ int main(int argc, char** argv)
 	drawer.vertex(10, 10);
 	drawer.end();
 	drawer.save("quad.png");
-	*/
+	
 	return 0;
 }

@@ -16,6 +16,15 @@ namespace agl
         ppm_pixel color;
     };
 
+    struct bounding_box 
+    {
+        // The coordinates of the bounding box for the triangle
+        int min_x;
+        int min_y;
+        int max_x;
+        int max_y;
+    };
+
    enum PrimitiveType {UNDEFINED, LINES, TRIANGLES};
    class canvas
    {
@@ -39,9 +48,23 @@ namespace agl
       void begin(PrimitiveType type);
       void end();
 
+      // Draw a line between two vertices using Bresenham's algorithm
+      // Linear color interpolation if two vertices of the same line have different colors
+      void draw_line();
+
       // Drawing the two different cases for Bresenham's algorithm
       void h_less_than_w(int ax, int ay, int bx, int by, int w, int h, ppm_pixel color, ppm_pixel next_color, bool color_interpolation);
       void w_less_than_h(int ax, int ay, int bx, int by, int w, int h, ppm_pixel color, ppm_pixel next_color, bool color_interpolation);
+
+      // Draw a triangle between three vertices using barycentric coordinates
+      // Color interpolation using Gouraud shading if vertices have different colors
+      void draw_triangle();
+
+      // Find the bounding box for the triangle to be drawn
+      bounding_box find_boundary(vertex_struct a, vertex_struct b, vertex_struct c);
+
+      // Find f(p) for a point p on a line between vertices m and n using the implicit line equation
+      float f_line_eqn(vertex_struct m, vertex_struct n, vertex_struct p);
 
       // Specifiy a vertex at raster position (x,y)
       // x corresponds to the column; y to the row

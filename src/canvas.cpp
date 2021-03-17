@@ -1,5 +1,6 @@
 #include "canvas.h"
 #include <cassert>
+#include <algorithm>
 
 using namespace std;
 using namespace agl;
@@ -25,15 +26,26 @@ void canvas::begin(PrimitiveType type)
 
 void canvas::end()
 {
+	if (current_shape == LINES) draw_line();
+	if (current_shape == TRIANGLES) draw_triangle();
+}
+
+void canvas::draw_line()
+{
 	for (int i = 0; i < (vertices.size() - 1); i++)
 	{
 		ppm_pixel color = vertices[i].color;
 		ppm_pixel next_color = vertices[i + 1].color;
 		bool color_interpolation = false;
-		if (color.r != next_color.r || color.g != next_color.g || color.b != next_color.b)
+
+		if ((i % 2) == 0) // Only check for color interpolation if the next vertex is for the same line
 		{
-			color_interpolation = true;
+			if (color.r != next_color.r || color.g != next_color.g || color.b != next_color.b)
+			{
+				color_interpolation = true;
+			}
 		}
+
 		int ax = vertices[i].x;
 		int ay = vertices[i].y;
 		int bx = vertices[i + 1].x;
@@ -79,13 +91,13 @@ void canvas::h_less_than_w(int ax, int ay, int bx, int by, int w, int h, ppm_pix
 
 	int total_pixels = bx - ax;
 	ppm_pixel orig_color = color;
-	float t = 0; // t for linear color interpolation
+	float t = 0; // alpha for linear color interpolation
 
 	for (int x = ax; x <= bx; x++)
 	{
 		if (color_interpolation)
 		{
-			t = (float)x / (float)total_pixels;
+			t = (float)(x-ax) / (float)total_pixels;
 			int new_r = floor(orig_color.r * (1 - t) + next_color.r * t);
 			int new_g = floor(orig_color.g * (1 - t) + next_color.g * t);
 			int new_b = floor(orig_color.b * (1 - t) + next_color.b * t);
@@ -123,7 +135,7 @@ void canvas::w_less_than_h(int ax, int ay, int bx, int by, int w, int h, ppm_pix
 	{
 		if (color_interpolation)
 		{
-			t = (float)y / (float)total_pixels;
+			t = (float)(y-ay) / (float)total_pixels;
 			int new_r = floor(orig_color.r * (1 - t) + next_color.r * t);
 			int new_g = floor(orig_color.g * (1 - t) + next_color.g * t);
 			int new_b = floor(orig_color.b * (1 - t) + next_color.b * t);
@@ -142,6 +154,87 @@ void canvas::w_less_than_h(int ax, int ay, int bx, int by, int w, int h, ppm_pix
 			f += (2 * w);
 		}
 	}
+}
+
+void canvas::draw_triangle()
+{
+	for (int i = 0; i < (vertices.size() - 2); i++)
+	{
+		vertex_struct a = vertices[i];
+		vertex_struct b = vertices[i+1];
+		vertex_struct c = vertices[i+2];
+		bounding_box boundaries = find_boundary(a, b, c);
+
+		float f_alpha = f_line_eqn(b, c, a);
+		float f_beta = f_line_eqn(a, c, b);
+		float f_gamma = f_line_eqn(a, b, c);
+
+		for (int i = boundaries.min_y; i <= boundaries.max_y; i++)
+		{
+			for (int j = boundaries.min_x; j <= boundaries.max_x; j++)
+			{
+				vertex_struct p = { i, j, _canvas.get(i, j) };
+
+				float f_bc_p = f_line_eqn(b, c, p);
+				float f_ac_p = f_line_eqn(a, c, p);
+				float f_ab_p = f_line_eqn(a, b, p);
+
+				float alpha = f_bc_p / f_alpha;
+				float beta = f_ac_p / f_beta;
+				float gamma = f_ab_p / f_gamma;
+
+				if ((alpha >= 0) && (beta >= 0) && (gamma >= 0))
+				{
+					float f_bc_minus_one = f_line_eqn(b, c, { -1,-1 });
+					float f_ac_minus_one = f_line_eqn(a, c, { -1,-1 });
+					float f_ab_minus_one = f_line_eqn(a, b, { -1,-1 });
+
+					bool draw_alpha = (alpha > 0) || ((f_alpha * f_bc_minus_one) > 0);
+					bool draw_beta = (beta > 0) || ((f_beta * f_ac_minus_one) > 0);
+					bool draw_gamma = (gamma > 0) || ((f_gamma * f_ab_minus_one) > 0);
+
+					if (draw_alpha && draw_beta && draw_gamma)
+					{
+						_canvas.set(i, j, current_color);
+					}
+
+				}
+			}
+		}
+
+	}
+}
+
+bounding_box canvas::find_boundary(vertex_struct a, vertex_struct b, vertex_struct c)
+{
+	bounding_box boundaries;
+	int ax = a.x;
+	int ay = a.y;
+	int bx = b.x;
+	int by = b.y;
+	int cx = c.x;
+	int cy = c.y;
+
+	int minx = min({ ax, bx, cx });
+	int miny = min({ ay, by, cy });
+	int maxx = max({ ax, bx, cx });
+	int maxy = max({ ay, by, cy });
+
+	boundaries = { minx, miny, maxx, maxy };
+	return boundaries;
+}
+
+float canvas::f_line_eqn(vertex_struct m, vertex_struct n, vertex_struct p)
+{
+	int mx = m.x;
+	int my = m.y;
+	int nx = n.x;
+	int ny = n.y;
+	int px = p.x;
+	int py = p.y;
+
+	float f_m_n_of_p = ((ny - my) * (px - mx)) - ((nx - mx) * (py - my));
+	return f_m_n_of_p;
 }
 
 void canvas::vertex(int x, int y)
