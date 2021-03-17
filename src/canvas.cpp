@@ -23,114 +23,6 @@ void canvas::begin(PrimitiveType type)
 	current_shape = type;
 }
 
-/*
-void canvas::end()
-{
-	for (int i = 0; i < (vertices.size() - 1); i++)
-	{
-		int ax = vertices[i].x;
-		int ay = vertices[i].y;
-		int bx = vertices[i + 1].x;
-		int by = vertices[i + 1].y;
-		
-		int w = bx - ax;
-		int h = by - ay;
-		bool increment = true; // ax <= bx or ay <= by
-
-		if (h <= w)
-		{
-			if (bx < ax)
-			{
-				int temp_bx = bx;
-				bx = ax;
-				ax = temp_bx;
-				int temp_by = by;
-				by = ay;
-				ay = temp_by;
-				w = bx - ax;
-				//h = by - ay;
-			}
-
-			if (by < ay)
-			{
-				increment = false;
-				//h = -1 * h;
-				h = ay - by;
-				//ax = ax - 1;
-				//bx = bx - 1;
-			}
-			int f = (2 * h) - w;
-
-			for (int x = ax; x <= bx; x++)
-			{
-				_canvas.set(ay, x, current_color);
-				if (f > 0)
-				{
-					if (increment)
-					{
-						ay++;
-					}
-					else
-					{
-						ay--;
-					}
-					f += (2 * (h - w));
-				}
-				else
-				{
-					f += (2 * h);
-				}
-			}
-		}
-		else
-		{
-			if (by < ay)
-			{
-				int temp_bx = bx;
-				bx = ax;
-				ax = temp_bx;
-				int temp_by = by;
-				by = ay;
-				ay = temp_by;
-				//w = bx - ax;
-				h = by - ay;
-			}
-
-			if (bx < ax)
-			{
-				increment = false;
-				//w = -1 * w;
-				w = ax - bx;
-				//ay = ay - 1;
-				//by = by - 1;
-			}
-			int f = (2 * w) - h;
-
-			for (int y = ay; y <= by; y++)
-			{
-				_canvas.set(y, ax, current_color);
-				if (f > 0)
-				{
-					if (increment)
-					{
-						ax++;
-					}
-					else
-					{
-						ax--;
-					}
-					f += (2 * (w - h));
-				}
-				else
-				{
-					f += (2 * w);
-				}
-			}
-		}
-	}
-	vertices.clear();
-}*/
-
 void canvas::end()
 {
 	for (int i = 0; i < (vertices.size() - 1); i++)
@@ -149,61 +41,42 @@ void canvas::end()
 
 		int w = bx - ax;
 		int h = by - ay;
-		bool increment = true; // ax <= bx or ay <= by
 
 		if (abs(h) <= abs(w))
 		{
-			int f = (2 * h) - w;
-
 			if (bx < ax)
-			{/*
-				if (by < ay)
-				{
-					increment = false;
-					h = ay - by;
-				}*/
-				h_less_than_w(bx, by, ax, ay, w, h, f, increment, color, next_color, color_interpolation);
+			{
+				h_less_than_w(bx, by, ax, ay, w, h, color, next_color, color_interpolation);
 			}
 			else
 			{
-				h_less_than_w(ax, ay, bx, by, w, h, f, increment, color, next_color, color_interpolation);
+				h_less_than_w(ax, ay, bx, by, w, h, color, next_color, color_interpolation);
 			}
 		}
 		else
-		{/*
-			if (bx < ax)
-			{
-				increment = false;
-				w = ax - bx;
-			}*/
-
-			int f = (2 * w) - h;
-
+		{
 			if (by < ay)
 			{
-				w_less_than_h(bx, by, ax, ay, w, h, f, increment, color, next_color, color_interpolation);
+				w_less_than_h(bx, by, ax, ay, w, h, color, next_color, color_interpolation);
 			}
 			else
 			{
-				w_less_than_h(ax, ay, bx, by, w, h, f, increment, color, next_color, color_interpolation);
+				w_less_than_h(ax, ay, bx, by, w, h, color, next_color, color_interpolation);
 			}
 		}
 	}
 	vertices.clear();
 }
 
-void canvas::h_less_than_w(int ax, int ay, int bx, int by, int w, int h, int f, bool increment, ppm_pixel color, ppm_pixel next_color, bool color_interpolation)
+void canvas::h_less_than_w(int ax, int ay, int bx, int by, int w, int h, ppm_pixel color, ppm_pixel next_color, bool color_interpolation)
 {
-	if (by < ay)
-	{
-		increment = false;
-		h = ay - by;
-	}
-	if (bx < ax)
-	{
-		increment = false;
-		w = ax - bx;
-	}
+	bool increment = true; // ax <= bx or ay <= by
+	if (by < ay) increment = false;
+	if (bx < ax) increment = false;
+	if (h < 0) h = -1 * h;
+	if (w < 0) w = -1 * w;
+	int f = (2 * h) - w;
+
 	int total_pixels = bx - ax;
 	ppm_pixel orig_color = color;
 	float t = 0; // t for linear color interpolation
@@ -221,35 +94,26 @@ void canvas::h_less_than_w(int ax, int ay, int bx, int by, int w, int h, int f, 
 		_canvas.set(ay, x, color);
 		if (f > 0)
 		{
-			if (increment)
-			{
-				ay++;
-			}
-			else
-			{
-				ay--;
-			}
+			if (increment) ay++;
+			else ay--;
+
 			f += (2 * (h - w));
 		}
 		else
 		{
-			f += (2 * h);
+			f += (2 * abs(h));
 		}
 	}
 }
 
-void canvas::w_less_than_h(int ax, int ay, int bx, int by, int w, int h, int f, bool increment, ppm_pixel color, ppm_pixel next_color, bool color_interpolation)
+void canvas::w_less_than_h(int ax, int ay, int bx, int by, int w, int h, ppm_pixel color, ppm_pixel next_color, bool color_interpolation)
 {
-	if (by < ay)
-	{
-		increment = false;
-		h = ay - by;
-	}
-	if (bx < ax)
-	{
-		increment = false;
-		w = ax - bx;
-	}
+	bool increment = true; // ax <= bx or ay <= by
+	if (by < ay) increment = false;
+	if (bx < ax) increment = false;
+	if (h < 0) h = -1 * h;
+	if (w < 0) w = -1 * w;
+	int f = (2 * w) - h;
 
 	int total_pixels = by - ay;
 	ppm_pixel orig_color = color;
@@ -268,14 +132,9 @@ void canvas::w_less_than_h(int ax, int ay, int bx, int by, int w, int h, int f, 
 		_canvas.set(y, ax, color);
 		if (f > 0)
 		{
-			if (increment)
-			{
-				ax++;
-			}
-			else
-			{
-				ax--;
-			}
+			if (increment) ax++;
+			else ax--;
+	
 			f += (2 * (w - h));
 		}
 		else
