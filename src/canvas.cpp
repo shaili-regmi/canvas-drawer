@@ -32,20 +32,11 @@ void canvas::end()
 
 void canvas::draw_line()
 {
-	for (int i = 0; i < (vertices.size() - 1); i++)
+	for (int i = 0; i < (vertices.size() - 1); i+=2)
 	{
 		ppm_pixel color = vertices[i].color;
 		ppm_pixel next_color = vertices[i + 1].color;
-		bool color_interpolation = false;
-
-		if ((i % 2) == 0) // Only check for color interpolation if the next vertex is for the same line
-		{
-			if (color.r != next_color.r || color.g != next_color.g || color.b != next_color.b)
-			{
-				color_interpolation = true;
-			}
-		}
-
+		
 		int ax = vertices[i].x;
 		int ay = vertices[i].y;
 		int bx = vertices[i + 1].x;
@@ -58,29 +49,29 @@ void canvas::draw_line()
 		{
 			if (bx < ax)
 			{
-				h_less_than_w(bx, by, ax, ay, w, h, color, next_color, color_interpolation);
+				h_less_than_w(bx, by, ax, ay, w, h, color, next_color);
 			}
 			else
 			{
-				h_less_than_w(ax, ay, bx, by, w, h, color, next_color, color_interpolation);
+				h_less_than_w(ax, ay, bx, by, w, h, color, next_color);
 			}
 		}
 		else
 		{
 			if (by < ay)
 			{
-				w_less_than_h(bx, by, ax, ay, w, h, color, next_color, color_interpolation);
+				w_less_than_h(bx, by, ax, ay, w, h, color, next_color);
 			}
 			else
 			{
-				w_less_than_h(ax, ay, bx, by, w, h, color, next_color, color_interpolation);
+				w_less_than_h(ax, ay, bx, by, w, h, color, next_color);
 			}
 		}
 	}
 	vertices.clear();
 }
 
-void canvas::h_less_than_w(int ax, int ay, int bx, int by, int w, int h, ppm_pixel color, ppm_pixel next_color, bool color_interpolation)
+void canvas::h_less_than_w(int ax, int ay, int bx, int by, int w, int h, ppm_pixel color, ppm_pixel next_color)
 {
 	bool increment = true; // ax <= bx or ay <= by
 	if (by < ay) increment = false;
@@ -90,20 +81,19 @@ void canvas::h_less_than_w(int ax, int ay, int bx, int by, int w, int h, ppm_pix
 	int f = (2 * h) - w;
 
 	int total_pixels = bx - ax;
-	ppm_pixel orig_color = color;
+	ppm_pixel fill_color;
 	float t = 0; // alpha for linear color interpolation
 
 	for (int x = ax; x <= bx; x++)
 	{
-		if (color_interpolation)
-		{
-			t = (float)(x-ax) / (float)total_pixels;
-			int new_r = floor(orig_color.r * (1 - t) + next_color.r * t);
-			int new_g = floor(orig_color.g * (1 - t) + next_color.g * t);
-			int new_b = floor(orig_color.b * (1 - t) + next_color.b * t);
-			color = { (unsigned char)new_r, (unsigned char)new_g, (unsigned char)new_b };
-		}
-		_canvas.set(ay, x, color);
+		t = (float)(x-ax) / (float)total_pixels;
+		int new_r = floor(color.r * (1 - t) + next_color.r * t);
+		int new_g = floor(color.g * (1 - t) + next_color.g * t);
+		int new_b = floor(color.b * (1 - t) + next_color.b * t);
+		fill_color = { (unsigned char)new_r, (unsigned char)new_g, (unsigned char)new_b };
+		
+		_canvas.set(ay, x, fill_color);
+
 		if (f > 0)
 		{
 			if (increment) ay++;
@@ -118,7 +108,7 @@ void canvas::h_less_than_w(int ax, int ay, int bx, int by, int w, int h, ppm_pix
 	}
 }
 
-void canvas::w_less_than_h(int ax, int ay, int bx, int by, int w, int h, ppm_pixel color, ppm_pixel next_color, bool color_interpolation)
+void canvas::w_less_than_h(int ax, int ay, int bx, int by, int w, int h, ppm_pixel color, ppm_pixel next_color)
 {
 	bool increment = true; // ax <= bx or ay <= by
 	if (by < ay) increment = false;
@@ -128,20 +118,19 @@ void canvas::w_less_than_h(int ax, int ay, int bx, int by, int w, int h, ppm_pix
 	int f = (2 * w) - h;
 
 	int total_pixels = by - ay;
-	ppm_pixel orig_color = color;
+	ppm_pixel fill_color;
 	float t = 0; // t for linear color interpolation
 
 	for (int y = ay; y <= by; y++)
 	{
-		if (color_interpolation)
-		{
-			t = (float)(y-ay) / (float)total_pixels;
-			int new_r = floor(orig_color.r * (1 - t) + next_color.r * t);
-			int new_g = floor(orig_color.g * (1 - t) + next_color.g * t);
-			int new_b = floor(orig_color.b * (1 - t) + next_color.b * t);
-			color = { (unsigned char)new_r, (unsigned char)new_g, (unsigned char)new_b };
-		}
-		_canvas.set(y, ax, color);
+		t = (float)(y-ay) / (float)total_pixels;
+		int new_r = floor(color.r * (1 - t) + next_color.r * t);
+		int new_g = floor(color.g * (1 - t) + next_color.g * t);
+		int new_b = floor(color.b * (1 - t) + next_color.b * t);
+		fill_color = { (unsigned char)new_r, (unsigned char)new_g, (unsigned char)new_b };
+		
+		_canvas.set(y, ax, fill_color);
+
 		if (f > 0)
 		{
 			if (increment) ax++;
@@ -158,11 +147,19 @@ void canvas::w_less_than_h(int ax, int ay, int bx, int by, int w, int h, ppm_pix
 
 void canvas::draw_triangle()
 {
-	for (int i = 0; i < (vertices.size() - 2); i++)
+	for (int i = 0; i < (vertices.size() - 2); i+=3)
 	{
 		vertex_struct a = vertices[i];
 		vertex_struct b = vertices[i+1];
 		vertex_struct c = vertices[i+2];
+		ppm_pixel color_a = a.color;
+		ppm_pixel color_b = b.color;
+		ppm_pixel color_c = c.color;
+		ppm_pixel fill_color;
+		int red;
+		int green;
+		int blue;
+
 		bounding_box boundaries = find_boundary(a, b, c);
 
 		float f_alpha = f_line_eqn(b, c, a);
@@ -173,7 +170,7 @@ void canvas::draw_triangle()
 		{
 			for (int j = boundaries.min_x; j <= boundaries.max_x; j++)
 			{
-				vertex_struct p = { i, j, _canvas.get(i, j) };
+				vertex_struct p = { j, i, _canvas.get(i, j) };
 
 				float f_bc_p = f_line_eqn(b, c, p);
 				float f_ac_p = f_line_eqn(a, c, p);
@@ -182,6 +179,11 @@ void canvas::draw_triangle()
 				float alpha = f_bc_p / f_alpha;
 				float beta = f_ac_p / f_beta;
 				float gamma = f_ab_p / f_gamma;
+
+				red = floor((alpha * color_a.r) + (beta * color_b.r) + (gamma * color_c.r));
+				green = floor((alpha * color_a.g) + (beta * color_b.g) + (gamma * color_c.g));
+				blue = floor((alpha * color_a.b) + (beta * color_b.b) + (gamma * color_c.b));
+				fill_color = { (unsigned char)red, (unsigned char)green, (unsigned char)blue };
 
 				if ((alpha >= 0) && (beta >= 0) && (gamma >= 0))
 				{
@@ -195,7 +197,7 @@ void canvas::draw_triangle()
 
 					if (draw_alpha && draw_beta && draw_gamma)
 					{
-						_canvas.set(i, j, current_color);
+						_canvas.set(i, j, fill_color);
 					}
 
 				}
@@ -203,6 +205,7 @@ void canvas::draw_triangle()
 		}
 
 	}
+	vertices.clear();
 }
 
 bounding_box canvas::find_boundary(vertex_struct a, vertex_struct b, vertex_struct c)

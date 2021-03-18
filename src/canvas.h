@@ -53,8 +53,8 @@ namespace agl
       void draw_line();
 
       // Drawing the two different cases for Bresenham's algorithm
-      void h_less_than_w(int ax, int ay, int bx, int by, int w, int h, ppm_pixel color, ppm_pixel next_color, bool color_interpolation);
-      void w_less_than_h(int ax, int ay, int bx, int by, int w, int h, ppm_pixel color, ppm_pixel next_color, bool color_interpolation);
+      void h_less_than_w(int ax, int ay, int bx, int by, int w, int h, ppm_pixel color, ppm_pixel next_color);
+      void w_less_than_h(int ax, int ay, int bx, int by, int w, int h, ppm_pixel color, ppm_pixel next_color);
 
       // Draw a triangle between three vertices using barycentric coordinates
       // Color interpolation using Gouraud shading if vertices have different colors
