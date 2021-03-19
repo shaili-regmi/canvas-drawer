@@ -132,29 +132,6 @@ bool ppm_image::save(const std::string& filename) const
     int result = stbi_write_png(filename.c_str(), columns, rows,
         3, (unsigned char*)buffer, columns * 3);
     return (result == 1);
-    
-
-    /*
-    ofstream file(filename);
-    if (!file)
-    {
-        return false;
-    }
-
-    file << FORMAT << endl;
-    file << columns << " " << rows << endl;
-    file << MAX_VALUE << endl;
-
-    for (int i = 0; i < rows; i++)
-    {
-        for (int j = 0; j < columns; j++)
-        {
-            file << (int)image_array[i][j].r << " " << (int)image_array[i][j].g << " " << (int)image_array[i][j].b << endl;
-        }
-    }
-
-    file.close();
-    return true;*/
 }
 
 ppm_image ppm_image::resize(int w, int h) const

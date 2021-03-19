@@ -1,6 +1,7 @@
 #include "canvas.h"
 #include <cassert>
 #include <algorithm>
+constexpr auto PI = 3.14159265358979323846;
 
 using namespace std;
 using namespace agl;
@@ -28,6 +29,7 @@ void canvas::end()
 {
 	if (current_shape == LINES) draw_line();
 	if (current_shape == TRIANGLES) draw_triangle();
+	if (current_shape == POINTS) draw_point();
 }
 
 void canvas::draw_line()
@@ -187,9 +189,11 @@ void canvas::draw_triangle()
 
 				if ((alpha >= 0) && (beta >= 0) && (gamma >= 0))
 				{
-					float f_bc_minus_one = f_line_eqn(b, c, { -1,-1 });
-					float f_ac_minus_one = f_line_eqn(a, c, { -1,-1 });
-					float f_ab_minus_one = f_line_eqn(a, b, { -1,-1 });
+					// Note that this algorithm doesn't draw the top and left edges
+					// Testing for shared edges using point (-1.2, -1.1)
+					float f_bc_minus_one = ((c.y - b.y) * (-1.2f - b.x)) - ((c.x - b.x) * (-1.1f - b.y));
+					float f_ac_minus_one = ((c.y - a.y) * (-1.2f - a.x)) - ((c.x - a.x) * (-1.1f - a.y));
+					float f_ab_minus_one = ((b.y - a.y) * (-1.2f - a.x)) - ((b.x - a.x) * (-1.1f - a.y));
 
 					bool draw_alpha = (alpha > 0) || ((f_alpha * f_bc_minus_one) > 0);
 					bool draw_beta = (beta > 0) || ((f_beta * f_ac_minus_one) > 0);
@@ -240,6 +244,98 @@ float canvas::f_line_eqn(vertex_struct m, vertex_struct n, vertex_struct p)
 	return f_m_n_of_p;
 }
 
+void canvas::draw_point()
+{
+	for (int i = 0; i < (vertices.size()); i++)
+	{
+		int ax = vertices[i].x;
+		int ay = vertices[i].y;
+
+		_canvas.set(ay, ax, vertices[i].color);
+	}
+	vertices.clear();
+}
+
+void canvas::unfilled_circle(int x, int y, int radius, unsigned char r, unsigned char g, unsigned char b, int smoothness)
+{
+	begin(LINES);
+	color(r, g, b);
+	circle(x, y, radius, "unfilled", smoothness);
+	end();
+}
+
+void canvas::filled_circle(int x, int y, int radius, unsigned char r, unsigned char g, unsigned char b, int smoothness)
+{
+	begin(TRIANGLES);
+	color(r, g, b);
+	circle(x, y, radius, "filled", smoothness);
+	end();
+}
+
+void canvas::circle(int x, int y, int radius, string type, int num_slices)
+{
+	float delta_theta = (2 * PI) / (float)num_slices;
+	float theta_one;
+	float theta_two;
+	int point_one_x;
+	int point_one_y;
+	int point_two_x;
+	int point_two_y;
+
+	for (int i = 0; i < num_slices; i++)
+	{
+		theta_one = i * delta_theta;
+		theta_two = (i + 1) * delta_theta;
+		point_one_x = x + floor(radius * cos(theta_one));
+		point_one_y = y + floor(radius * sin(theta_one));
+		point_two_x = x + floor(radius * cos(theta_two));
+		point_two_y = y + floor(radius * sin(theta_two));
+
+		if (type.compare("filled") == 0) vertex(x, y);
+		vertex(point_one_x, point_one_y);
+		vertex(point_two_x, point_two_y);
+	}
+}
+
+void canvas::unfilled_polygon()
+{
+	begin(LINES);
+}
+
+void canvas::rose_curve(int x, int y, unsigned char r, unsigned char g, unsigned char b, int smoothness, float amplitude, float angular_freq)
+{
+	begin(LINES);
+	color(r, g, b);
+
+	float delta_theta = (2 * PI) / (float)smoothness;
+	float theta_one;
+	float theta_two;
+	int point_one_x;
+	int point_one_y;
+	int point_two_x;
+	int point_two_y;
+
+	float radius_one;
+	float radius_two;
+
+
+	for (int i = 0; i < smoothness; i++)
+	{
+		theta_one = i * delta_theta;
+		theta_two = (i + 1) * delta_theta;
+		radius_one = amplitude * cos(angular_freq * theta_one);
+		radius_two = amplitude * cos(angular_freq * theta_two);
+		point_one_x = x + floor(radius_one * cos(theta_one));
+		point_one_y = y + floor(radius_one * sin(theta_one));
+		point_two_x = x + floor(radius_two * cos(theta_two));
+		point_two_y = y + floor(radius_two * sin(theta_two));
+
+		vertex(point_one_x, point_one_y);
+		vertex(point_two_x, point_two_y);
+	}
+	end();
+}
+
 void canvas::vertex(int x, int y)
 {
 	if (x >= _canvas.width())
@@ -250,6 +346,8 @@ void canvas::vertex(int x, int y)
 	{
 		y = _canvas.height() - 1;
 	}
+	if (x < 0) x = 0;
+	if (y < 0) y = 0;
 	vertices.push_back({ x,y, current_color });
 }
 

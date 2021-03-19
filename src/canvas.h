@@ -25,7 +25,7 @@ namespace agl
         int max_y;
     };
 
-   enum PrimitiveType {UNDEFINED, LINES, TRIANGLES};
+   enum PrimitiveType {UNDEFINED, LINES, TRIANGLES, POINTS};
    class canvas
    {
    public:
@@ -65,6 +65,24 @@ namespace agl
 
       // Find f(p) for a point p on a line between vertices m and n using the implicit line equation
       float f_line_eqn(vertex_struct m, vertex_struct n, vertex_struct p);
+
+      // Draw points at the given vertices
+      void draw_point();
+
+      // Draw an unfilled circle with the given center (x,y), radius, color, and smoothness (how many lines the circle is divided into)
+      void unfilled_circle(int x, int y, int radius, unsigned char r, unsigned char g, unsigned char b, int smoothness);
+
+      // Draw a filled circle with the given center (x,y), radius, color, and smoothness (how many triangles the circle is divided into)
+      void filled_circle(int x, int y, int radius, unsigned char r, unsigned char g, unsigned char b, int smoothness);
+
+      // Helper function for unfilled and filled circle functions where type is the type of circle (filled or unfilled)
+      void circle(int x, int y, int radius, string type, int smoothness);
+
+      // Draw unfilled concave or convex polygons with the vertices that follow. Need to call end() after the vertices.
+      void unfilled_polygon();
+
+      // Draw unfilled rose curves with the given center (x,y), color, smoothness, amplitude, and angular frequency
+      void rose_curve(int x, int y, unsigned char r, unsigned char g, unsigned char b, int smoothness, float amplitude, float angular_freq);
 
       // Specifiy a vertex at raster position (x,y)
       // x corresponds to the column; y to the row
